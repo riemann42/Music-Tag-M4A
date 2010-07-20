@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Music-Tag-M4A
-version:             0.3
+version:             0.31
 abstract:            Plugin module for Music::Tag to get information from Apple QuickTime headers. 
 license:             perl
 author:              
