@@ -1,0 +1,17 @@
+--- #YAML:1.0
+name:                Music-Tag-M4A
+version:             0.3
+abstract:            Plugin module for Music::Tag to get information from Apple QuickTime headers. 
+license:             perl
+author:              
+    - Edward Allen (ealleniii _at_ cpan _dot_ org)
+generated_by:        ExtUtils::MakeMaker version 6.42
+distribution_type:   module
+requires:     
+    Audio::M4P::QuickTime:         0.37
+    MP4::Info:                     1.12
+    Music::Tag:                    0.27
+    Tree::Simple:                  0
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3
