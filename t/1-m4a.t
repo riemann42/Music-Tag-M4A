@@ -1,34 +1,26 @@
 #!/usr/bin/perl -w
 use strict;
-
-use Test::More tests => 8;
-use File::Copy;
+use Test::More tests => 25;
+use lib 't';
+use MusicTagTest;
 use 5.006;
 
 BEGIN { use_ok('Music::Tag') }
 
-our $options = {};
+ok(Music::Tag->LoadOptions("t/options.conf"), "Loading options file.");
+my $c = filetest("t/elise.m4a", "t/elisetest.m4a", {'write_m4a' => 1, quiet => 1},{
+	values_in => {
+        artist =>, "Beethoven", 
+		album => "GPL",
+		title => "Elise",
+	},
+	skip_write_tests => 0,
+	count => 23,
+	picture_in => 1,
+	random_write => [ qw(title album comment artist  ) ],
+	random_write_num => [ qw(track totaltracks) ],
+	count => 32,
+	plugin => 'M4A'
+});
 
-# Add 13 test for each run of this
-sub filetest {
-    my $file        = shift;
-    my $testoptions = shift;
-  SKIP: {
-        skip "File: $file does not exists", 7 unless ( -f $file );
-        return unless ( -f $file );
-        my $tag = Music::Tag->new( $file, $testoptions );
-        ok( $tag, 'Object created: ' . $file );
-        die unless $tag;
-        ok( $tag->get_tag, 'get_tag called: ' . $file );
-        ok( $tag->isa('Music::Tag'), 'Correct Class: ' . $file );
-        is( $tag->artist, "Beethoven", 'Artist: ' . $file );
-        is( $tag->album,  "GPL",       'Album: ' . $file );
-        is( $tag->title,  "Elise",     'Title: ' . $file );
-		$tag->close();
-		$tag = undef;
-    }
-}
-
-ok( Music::Tag->LoadOptions("t/options.conf"), "Loading options file.\n" );
-filetest( "t/elise.m4a" );
 

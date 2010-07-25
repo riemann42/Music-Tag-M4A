@@ -43,10 +43,11 @@ No values are required (except filename, which is usually provided on object cre
 =cut
 
 use strict;
+use Music::Tag::Generic;
 use Music::Tag;
 use Audio::M4P::QuickTime;
 use MP4::Info;
-our @ISA = qw(Music::Tag::Generic);
+use base qw(Music::Tag::Generic);
 
 sub _default_options {
 	{ write_m4a => 0 }
@@ -54,7 +55,7 @@ sub _default_options {
 
 sub get_tag {
 	my $self = shift;
-	$self->get_tag_mp4_info;
+	#$self->get_tag_mp4_info;
 	$self->get_tag_qt_info;
 	return $self;
 }
@@ -79,8 +80,9 @@ sub get_tag_qt_info {
     my $tinfo    = $self->qt->iTMS_MetaInfo;
 	my $minfo    = $self->qt->GetMP4Info;
 	my $ginfo    = $self->qt->GetMetaInfo;
-    $self->info->album( $ginfo->{ALB} );
-    $self->info->artist( $ginfo->{ART} );
+	
+    $self->info->album( $ginfo->{ALBUM} );
+    $self->info->artist( $ginfo->{ARTIST} );
 	my $date = $tinfo->{year} || $ginfo->{DAY};
 	$date =~ s/T.*$//;
 
@@ -171,16 +173,24 @@ sub set_tag {
 		return $self;
 	}
 
-	unless ($ginfo->{ALB} eq $self->info->album) {
-		$self->status("Storing new tag info for album");
-		$self->qt->SetMetaInfo(ALB => $self->info->album, 1, 'day');
-		$changed++;
-    }
-	unless ($ginfo->{ART} eq $self->info->artist) {
-		$self->status("Storing new tag info for artist");
-		$self->qt->SetMetaInfo(ART => $self->info->artist, 1 , 'nam');
-		$changed++;
-    }
+	my %simple_map = (
+		album => 'album',
+		artist => 'artist',
+		title => 'title',
+		comment => 'comment',
+		genre => 'genre_as_text',
+		track => 'track',
+		totaltracks => 'total',
+		year => 'year',
+	);
+
+	while (my ($mtm,$qtm) = each %simple_map) {
+		unless ($self->qt->$qtm eq $self->info->$mtm) {
+			$self->status("Storing new tag info for $mtm");
+			$self->qt->$qtm($self->info->$mtm);
+			$changed++;
+		}
+	}
 	unless ($ginfo->{TMPO} eq $self->info->tempo) {
 		$self->status("Storing new tag info for tempo");
 		$self->qt->SetMetaInfo(TMPO => $self->info->tempo, 1);
@@ -188,22 +198,12 @@ sub set_tag {
     }
 	unless ($ginfo->{TOO} eq $self->info->encoder) {
 		$self->status("Storing new tag info for encoder");
-		$self->qt->SetMetaInfo(TOO => $self->info->encoder, 1, 'covr');
-		$changed++;
-    }
-	unless ($ginfo->{NAM} eq $self->info->title) {
-		$self->status("Storing new tag info for title");
-		$self->qt->SetMetaInfo(NAM => $self->info->title, 1, 'wrt');
+		$self->qt->SetMetaInfo(TOO => $self->info->encoder, 1);
 		$changed++;
     }
 	unless ($ginfo->{WRT} eq $self->info->composer) {
 		$self->status("Storing new tag info for composer");
-		$self->qt->SetMetaInfo(WRT => $self->info->composer, 1, 'alb');
-		$changed++;
-    }
-	unless ($ginfo->{COMMENT} eq $self->info->comment) {
-		$self->status("Storing new tag info for comment");
-		$self->qt->SetMetaInfo(COMMENT => $self->info->comment, 1);
+		$self->qt->SetMetaInfo(WRT => $self->info->composer, 1);
 		$changed++;
     }
 	unless ($ginfo->{LYRICS} eq $self->info->lyrics) {
