@@ -9,39 +9,6 @@ our $VERSION = 0.31;
 #
 
 
-=pod
-
-=head1 NAME
-
-Music::Tag::M4A - Plugin module for Music::Tag to get information from Apple QuickTime headers. 
-
-=head1 SYNOPSIS
-
-	use Music::Tag
-
-	my $filename = "/var/lib/music/artist/album/track.m4a";
-
-	my $info = Music::Tag->new($filename, { quiet => 1 }, "M4A");
-
-	$info->get_info();
-	   
-	print "Artist is ", $info->artist;
-
-=head1 DESCRIPTION
-
-Music::Tag::M4A is used to read header information from QuickTime MP4 contonainers. It uses Audio::M4P::QuickTime and MP4::Info.
-
-It is not currently able to write M4A tags (safely). Audio::M4P::QuickTime can write these tags, but iTunes has trouble reading them after
-they have been writen. Setting the option "write_m4a" will enable some tags to be writen, but iTunes will have problems!
-
-=head1 REQUIRED DATA VALUES
-
-No values are required (except filename, which is usually provided on object creation).
-
-=head1 SET DATA VALUES
-
-=cut
-
 use strict;
 use Music::Tag::Generic;
 use Music::Tag;
@@ -85,20 +52,6 @@ sub get_tag_qt_info {
     $self->info->artist( $ginfo->{ARTIST} );
 	my $date = $tinfo->{year} || $ginfo->{DAY};
 	$date =~ s/T.*$//;
-
-=pod
-
-=over 4
-
-=item B<artist, album >
-
-=item B<disc, totaldiscs, tempo, encoder, title, composer>
-
-=item B<copyright, track, totaltracks, comment, lyrics>
-
-=item B<bitrate, duration, picture>
-
-=cut
 
 	$self->info->releasedate($date);
 
@@ -226,6 +179,54 @@ sub close {
 	delete $self->{_qt};
 }
 
+
+1;
+
+# vim: tabstop=4
+__END__
+=pod
+
+=head1 NAME
+
+Music::Tag::M4A - Plugin module for Music::Tag to get information from Apple QuickTime headers. 
+
+=head1 SYNOPSIS
+
+	use Music::Tag
+
+	my $filename = "/var/lib/music/artist/album/track.m4a";
+
+	my $info = Music::Tag->new($filename, { quiet => 1 }, "M4A");
+
+	$info->get_info();
+	   
+	print "Artist is ", $info->artist;
+
+=head1 DESCRIPTION
+
+Music::Tag::M4A is used to read header information from QuickTime MP4 contonainers. It uses Audio::M4P::QuickTime and MP4::Info.
+
+It is not currently able to write M4A tags (safely). Audio::M4P::QuickTime can write these tags, but iTunes has trouble reading them after
+they have been writen. Setting the option "write_m4a" will enable some tags to be writen, but iTunes will have problems!
+
+=head1 REQUIRED DATA VALUES
+
+No values are required (except filename, which is usually provided on object creation).
+
+=head1 SET DATA VALUES
+
+=pod
+
+=over 4
+
+=item B<artist, album >
+
+=item B<disc, totaldiscs, tempo, encoder, title, composer>
+
+=item B<copyright, track, totaltracks, comment, lyrics>
+
+=item B<bitrate, duration, picture>
+
 =back
 
 =head1 METHODS
@@ -263,7 +264,6 @@ Returns the Audio::M4P::QuickTime object
 
 =back
 
-
 =head1 OPTIONS
 
 =over 4
@@ -281,6 +281,14 @@ M4A Tags are error-prone. Writing tags is not reliable.
 =head1 SEE ALSO
 
 L<Audio::M4P::QuickTime>, L<MP4::Info>, L<Music::Tag>
+
+=head1 SOURCE
+
+Source is available at github: L<http://github.com/riemann42/Music-Tag-M4A|http://github.com/riemann42/Music-Tag-M4A>.
+
+=head1 BUGTRACKING
+
+Please use github for bug tracking: L<http://github.com/riemann42/Music-Tag-M4A/issues|http://github.com/riemann42/Music-Tag-M4A/issues>.
 
 =head1 AUTHOR 
 
@@ -317,9 +325,3 @@ http://www.gnu.org/copyleft/gpl.html.
 Copyright (c) 2007 Edward Allen III. Some rights reserved.
 
 
-=cut
-
-
-1;
-
-# vim: tabstop=4
