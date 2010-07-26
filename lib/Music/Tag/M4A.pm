@@ -1,7 +1,9 @@
 package Music::Tag::M4A;
+use strict;
+use warnings;
 our $VERSION = 0.31;
 
-# Copyright (c) 2007 Edward Allen III. Some rights reserved.
+# Copyright (c) 2007,2010 Edward Allen III. Some rights reserved.
 
 #
 # You may distribute under the terms of either the GNU General Public
@@ -9,7 +11,6 @@ our $VERSION = 0.31;
 #
 
 
-use strict;
 use Music::Tag::Generic;
 use Music::Tag;
 use Audio::M4P::QuickTime;
@@ -204,10 +205,10 @@ Music::Tag::M4A - Plugin module for Music::Tag to get information from Apple Qui
 
 =head1 DESCRIPTION
 
-Music::Tag::M4A is used to read header information from QuickTime MP4 contonainers. It uses Audio::M4P::QuickTime and MP4::Info.
+Music::Tag::M4A is used to read header information from QuickTime MP4 containers. It uses Audio::M4P::QuickTime and MP4::Info.
 
 It is not currently able to write M4A tags (safely). Audio::M4P::QuickTime can write these tags, but iTunes has trouble reading them after
-they have been writen. Setting the option "write_m4a" will enable some tags to be writen, but iTunes will have problems!
+they have been written. Setting the option "write_m4a" will enable some tags to be written, but iTunes will have problems!
 
 =head1 REQUIRED DATA VALUES
 
@@ -270,7 +271,7 @@ Returns the Audio::M4P::QuickTime object
 
 =item B<write_m4a>
 
-Set to true to allow some tags to be writen to disc.  Not recommended.
+Set to true to allow some tags to be written to disc.  Not recommended.
 
 =back
 
@@ -286,7 +287,7 @@ L<Audio::M4P::QuickTime>, L<MP4::Info>, L<Music::Tag>
 
 Source is available at github: L<http://github.com/riemann42/Music-Tag-M4A|http://github.com/riemann42/Music-Tag-M4A>.
 
-=head1 BUGTRACKING
+=head1 BUG TRACKING
 
 Please use github for bug tracking: L<http://github.com/riemann42/Music-Tag-M4A/issues|http://github.com/riemann42/Music-Tag-M4A/issues>.
 
