@@ -21,6 +21,19 @@ sub _default_options {
 	{ write_m4a => 0 }
 }
 
+sub set_values {
+	return qw(  album artist bitrate comment compilation composer
+				copyright disc duration encoder filename frequency genre
+				lyrics picture releasedate tempo title
+				totaldiscs totaltracks track year);
+}
+
+sub saved_values {
+	return qw(  album artist bitrate comment compilation composer
+				disc encoder frequency genre get_info lyrics 
+				releasedate tempo title totaldiscs totaltracks track year);
+}
+
 sub get_tag {
 	my $self = shift;
 	#$self->get_tag_mp4_info;
@@ -234,32 +247,40 @@ No values are required (except filename, which is usually provided on object cre
 
 =over 4
 
-=item default_options
+=item B<default_options()>
 
 Returns the default options for the plugin.  
 
-=item set_tag
+=item B<set_tag()>
 
 Save object back to MPEG4 container. THIS IS DANGEROUS. Requires write_m4a be set to true.
 
-=item get_tag
+=item B<get_tag()>
 
 Load information from MPEG4 container. 
 
-=item get_tag_qt_info 
+=item B<set_values()>
+
+A list of values that can be set by this module.
+
+=item B<saved_values()>
+
+A list of values that can be saved by this module.
+
+=item B<get_tag_qt_info()> 
 
 Load information using Audio::M4P::QuickTime
 
-=item get_tag_mp4_info
+=item B<get_tag_mp4_info()>
 
 Load information using MP4::Info
 
-=item close
+=item B<close()>
 
 Close the file and destroy the Audio::M4P::QuickTime object. As this can be large, do this soon after running get_tag
 if you do not intend to write back to the file ever.
 
-=item qt
+=item B<qt()>
 
 Returns the Audio::M4P::QuickTime object
 
