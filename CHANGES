@@ -10,6 +10,8 @@ CHANGES
 		
 		*	Rearranged some code to use hash table
 
+		*	Capability methods
+
 		*	Bugfixes
 
     Release Name: 0.30
