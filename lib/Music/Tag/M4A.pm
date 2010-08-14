@@ -10,194 +10,206 @@ our $VERSION = .40_01;
 # License or the Artistic License, as specified in the README file.
 #
 
-
 use Music::Tag::Generic;
-use Music::Tag;
 use Audio::M4P::QuickTime;
 use MP4::Info;
 use base qw(Music::Tag::Generic);
 
 sub _default_options {
-	{ write_m4a => 0 }
+    { write_m4a => 0 };
 }
 
 sub set_values {
-	return qw(  album artist bitrate comment compilation composer
-				copyright disc duration encoder filename frequency genre
-				lyrics picture releasedate tempo title
-				totaldiscs totaltracks track year);
+    return qw(  album artist bitrate comment compilation composer
+        copyright disc duration encoder filename frequency genre
+        lyrics picture releasedate tempo title
+        totaldiscs totaltracks track year);
 }
 
 sub saved_values {
-	return qw(  album artist bitrate comment compilation composer
-				disc encoder frequency genre get_info lyrics 
-				releasedate tempo title totaldiscs totaltracks track year);
+    return qw(  album artist bitrate comment compilation composer
+        disc encoder frequency genre get_info lyrics
+        releasedate tempo title totaldiscs totaltracks track year);
 }
 
 sub get_tag {
-	my $self = shift;
-	#$self->get_tag_mp4_info;
-	$self->get_tag_qt_info;
-	return $self;
+    my $self = shift;
+
+    #$self->get_tag_mp4_info;
+    $self->get_tag_qt_info;
+    return $self;
 }
 
 sub qt {
-	my $self = shift;
-	unless (exists $self->{_qt}) {
-		$self->{_qt} =  Audio::M4P::QuickTime->new(file => $self->info->filename());
-	}
-	return $self->{_qt};
+    my $self = shift;
+    unless ( exists $self->{_qt} ) {
+        $self->{_qt} =
+            Audio::M4P::QuickTime->new(
+            file => $self->info->get_data('filename') );
+    }
+    return $self->{_qt};
 }
-		
-
 
 sub get_tag_qt_info {
     my $self     = shift;
-    my $filename = $self->info->filename();
-	unless ($self->qt) {
-		$self->status("Failed to create Audio::M4P::QuickTime object");
-		return $self;
-	}
-    my $tinfo    = $self->qt->iTMS_MetaInfo;
-	my $minfo    = $self->qt->GetMP4Info;
-	my $ginfo    = $self->qt->GetMetaInfo;
-	
-    $self->info->album( $ginfo->{ALBUM} );
-    $self->info->artist( $ginfo->{ARTIST} );
-	my $date = $tinfo->{year} || $ginfo->{DAY};
-	$date =~ s/T.*$//;
+    my $filename = $self->info->get_data('filename');
+    unless ( $self->qt ) {
+        $self->status("Failed to create Audio::M4P::QuickTime object");
+        return $self;
+    }
+    my $tinfo = $self->qt->iTMS_MetaInfo;
+    my $minfo = $self->qt->GetMP4Info;
+    my $ginfo = $self->qt->GetMetaInfo;
 
-	$self->info->releasedate($date);
+    $self->info->set_data( 'album',  $ginfo->{ALBUM} );
+    $self->info->set_data( 'artist', $ginfo->{ARTIST} );
+    my $date = $tinfo->{year} || $ginfo->{DAY};
+    $date =~ s/T.*$//;
 
-	$self->info->disc( $tinfo->{discNumber});
-	$self->info->totaldiscs( $tinfo->{discCount});
-	$self->info->copyright( $tinfo->{copyright} );
+    $self->info->set_data( 'releasedate', $date );
 
-    $self->info->tempo( $ginfo->{TMPO} );
-    $self->info->encoder( $ginfo->{TOO} || "iTMS");
-	$self->info->genre( $self->qt->genre_as_text );
-	$self->info->title( $ginfo->{NAM} );
-    $self->info->composer( $ginfo->{WRT} );
-	$self->info->track( $self->qt->track);
-	$self->info->totaltracks( $self->qt->total);
-	$self->info->comment($ginfo->{COMMENT});
-	$self->info->lyrics($ginfo->{LYRICS});
+    $self->info->set_data( 'disc',       $tinfo->{discNumber} );
+    $self->info->set_data( 'totaldiscs', $tinfo->{discCount} );
+    $self->info->set_data( 'copyright',  $tinfo->{copyright} );
 
-    $self->info->bitrate( $minfo->{BITRATE} );
-    $self->info->duration( $minfo->{SECONDS} * 1000 );
-	if (not $self->info->picture_exists) {
-	  my $picture = $self->qt->GetCoverArt;
-	  if ((ref $picture) && (@{$picture}) && ($picture->[0])) {
-		$self->info->picture( { "MIME type" => "image/jpg", "_Data" => $picture->[0] } );
-	  }
-	}
+    $self->info->set_data( 'tempo', $ginfo->{TMPO} );
+    $self->info->set_data( 'encoder', $ginfo->{TOO} || "iTMS" );
+    $self->info->genre( $self->qt->genre_as_text );
+    $self->info->set_data( 'title',       $ginfo->{NAM} );
+    $self->info->set_data( 'composer',    $ginfo->{WRT} );
+    $self->info->set_data( 'track',       $self->qt->track );
+    $self->info->set_data( 'totaltracks', $self->qt->total );
+    $self->info->set_data( 'comment',     $ginfo->{COMMENT} );
+    $self->info->set_data( 'lyrics',      $ginfo->{LYRICS} );
+
+    $self->info->set_data( 'bitrate',  $minfo->{BITRATE} );
+    $self->info->set_data( 'duration', $minfo->{SECONDS} * 1000 );
+    if ( not $self->info->picture_exists ) {
+        my $picture = $self->qt->GetCoverArt;
+        if ( ( ref $picture ) && ( @{$picture} ) && ( $picture->[0] ) ) {
+            $self->info->set_data( 'picture',
+                { "MIME type" => "image/jpg", "_Data" => $picture->[0] } );
+        }
+    }
     return $self;
 }
 
 sub get_tag_mp4_info {
     my $self     = shift;
-    my $filename = $self->info->filename();
+    my $filename = $self->info->get_data('filename');
     my $tinfo    = get_mp4tag($filename);
     my $ftinfo   = get_mp4info($filename);
-    $self->info->album( $tinfo->{ALB} );
-    $self->info->artist( $tinfo->{ART} );
-    $self->info->year( $tinfo->{DAY} );
-    $self->info->disc( $tinfo->{DISK}->[0] );
-    $self->info->totaldiscs( $tinfo->{DISK}->[1] );
-    $self->info->genre( $tinfo->{GNRE} );
-    $self->info->title( $tinfo->{NAM} );
-    $self->info->compilation( $tinfo->{CPIL} );
-    $self->info->copyright( $tinfo->{CPRT} );
-    $self->info->tempo( $tinfo->{TMPO} );
-    $self->info->encoder( $tinfo->{TOO} || "iTMS");
-    $self->info->composer( $tinfo->{WRT} );
-    $self->info->track( $tinfo->{TRKN}->[0] );
-    $self->info->totaltracks( $tinfo->{TRKN}->[1] );
-    $self->info->comment($tinfo->{CMT});
-    $self->info->duration( $ftinfo->{SECS} * 1000 );
-    $self->info->bitrate( $ftinfo->{BITRATE} );
-    $self->info->frequency( $ftinfo->{FREQUENCY} );
+    $self->info->set_data( 'album',       $tinfo->{ALB} );
+    $self->info->set_data( 'artist',      $tinfo->{ART} );
+    $self->info->set_data( 'year',        $tinfo->{DAY} );
+    $self->info->set_data( 'disc',        $tinfo->{DISK}->[0] );
+    $self->info->set_data( 'totaldiscs',  $tinfo->{DISK}->[1] );
+    $self->info->set_data( 'genre',       $tinfo->{GNRE} );
+    $self->info->set_data( 'title',       $tinfo->{NAM} );
+    $self->info->set_data( 'compilation', $tinfo->{CPIL} );
+    $self->info->set_data( 'copyright',   $tinfo->{CPRT} );
+    $self->info->set_data( 'tempo',       $tinfo->{TMPO} );
+    $self->info->set_data( 'encoder',     $tinfo->{TOO} || "iTMS" );
+    $self->info->set_data( 'composer',    $tinfo->{WRT} );
+    $self->info->set_data( 'track',       $tinfo->{TRKN}->[0] );
+    $self->info->set_data( 'totaltracks', $tinfo->{TRKN}->[1] );
+    $self->info->set_data( 'comment',     $tinfo->{CMT} );
+    $self->info->set_data( 'duration',    $ftinfo->{SECS} * 1000 );
+    $self->info->set_data( 'bitrate',     $ftinfo->{BITRATE} );
+    $self->info->set_data( 'frequency',   $ftinfo->{FREQUENCY} );
     return $self;
 }
 
 sub set_tag {
     my $self     = shift;
-    my $filename = $self->info->filename();
-	unless ($self->qt) {
-		$self->status("Failed to create Audio::M4P::QuickTime object");
-		return $self;
-	}
-    my $tinfo    = $self->qt->iTMS_MetaInfo;
-	my $minfo    = $self->qt->GetMP4Info;
-	my $ginfo    = $self->qt->GetMetaInfo;
-	my $changed = 0;
+    my $filename = $self->info->get_data('filename');
+    unless ( $self->qt ) {
+        $self->status("Failed to create Audio::M4P::QuickTime object");
+        return $self;
+    }
+    my $tinfo   = $self->qt->iTMS_MetaInfo;
+    my $minfo   = $self->qt->GetMP4Info;
+    my $ginfo   = $self->qt->GetMetaInfo;
+    my $changed = 0;
 
-	if ($self->options->{write_m4a}) {
-		$self->status("Writing M4A files is in development and dangerous if you use iTunes. Only some tags supported.");
-	}
-	else {
-		$self->status("Writing M4A files is dangerous.  Set write_m4a to true if you want to try.");
-		return $self;
-	}
+    if ( $self->options->{write_m4a} ) {
+        $self->status(
+            "Writing M4A files is in development and dangerous if you use iTunes. Only some tags supported."
+        );
+    }
+    else {
+        $self->status(
+            "Writing M4A files is dangerous.  Set write_m4a to true if you want to try."
+        );
+        return $self;
+    }
 
-	my %simple_map = (
-		album => 'album',
-		artist => 'artist',
-		title => 'title',
-		comment => 'comment',
-		genre => 'genre_as_text',
-		track => 'track',
-		totaltracks => 'total',
-		year => 'year',
-	);
+    my %simple_map = (
+        album       => 'album',
+        artist      => 'artist',
+        title       => 'title',
+        comment     => 'comment',
+        genre       => 'genre_as_text',
+        track       => 'track',
+        totaltracks => 'total',
+        year        => 'year',
+    );
 
-	while (my ($mtm,$qtm) = each %simple_map) {
-		unless ($self->qt->$qtm eq $self->info->$mtm) {
-			$self->status("Storing new tag info for $mtm");
-			$self->qt->$qtm($self->info->$mtm);
-			$changed++;
-		}
-	}
-	unless ($ginfo->{TMPO} eq $self->info->tempo) {
-		$self->status("Storing new tag info for tempo");
-		$self->qt->SetMetaInfo(TMPO => $self->info->tempo, 1);
-		$changed++;
+    while ( my ( $mtm, $qtm ) = each %simple_map ) {
+        unless ( ( $self->has_data($mtm) )
+            && ( $self->qt->$qtm eq $self->info->get_data($mtm) ) ) {
+            $self->status("Storing new tag info for $mtm");
+            $self->qt->$qtm( $self->info->get_data($mtm) );
+            $changed++;
+        }
     }
-	unless ($ginfo->{TOO} eq $self->info->encoder) {
-		$self->status("Storing new tag info for encoder");
-		$self->qt->SetMetaInfo(TOO => $self->info->encoder, 1);
-		$changed++;
+    unless ( ( $self->info->has_data('tempo') )
+        && ( $ginfo->{TMPO} eq $self->info->get_data('tempo') ) ) {
+        $self->status("Storing new tag info for tempo");
+        $self->qt->SetMetaInfo( TMPO => $self->info->get_data('tempo'), 1 );
+        $changed++;
     }
-	unless ($ginfo->{WRT} eq $self->info->composer) {
-		$self->status("Storing new tag info for composer");
-		$self->qt->SetMetaInfo(WRT => $self->info->composer, 1);
-		$changed++;
+    unless ( ( $self->info->has_data('encoder') )
+        && ( $ginfo->{TOO} eq $self->info->get_data('encoder') ) ) {
+        $self->status("Storing new tag info for encoder");
+        $self->qt->SetMetaInfo( TOO => $self->info->get_data('encoder'), 1 );
+        $changed++;
     }
-	unless ($ginfo->{LYRICS} eq $self->info->lyrics) {
-		$self->status("Storing new tag info for lyrics");
-		my $lyrics = $self->info->lyrics;
-		$lyrics =~ s/\r?\n/\r/g;
-		$self->qt->SetMetaInfo(LYRICS => $self->info->lyrics, 1);
-		$changed++;
+    unless ( ( $self->info->has_data('composer') )
+        && ( $ginfo->{WRT} eq $self->info->get_data('composer') ) ) {
+        $self->status("Storing new tag info for composer");
+        $self->qt->SetMetaInfo( WRT => $self->info->get_data('composer'), 1 );
+        $changed++;
     }
-	if ($changed) {
-		$self->status("Writing to $filename...");
-		$self->qt->WriteFile($filename);
-	}
+    unless ( ( $self->info->has_data('lyrics') )
+        && ( $ginfo->{LYRICS} eq $self->info->get_data('lyrics') ) ) {
+        $self->status("Storing new tag info for lyrics");
+        my $lyrics = $self->info->get_data('lyrics');
+        $lyrics =~ s/\r?\n/\r/g;
+        $self->qt->SetMetaInfo(
+            LYRICS => $self->info->get_data('lyrics'),
+            1
+        );
+        $changed++;
+    }
+    if ($changed) {
+        $self->status("Writing to $filename...");
+        $self->qt->WriteFile($filename);
+    }
     return $self;
 }
 
 sub close {
-	my $self = shift;
-	undef $self->{_qt};
-	delete $self->{_qt};
+    my $self = shift;
+    undef $self->{_qt};
+    delete $self->{_qt};
 }
-
 
 1;
 
 # vim: tabstop=4
 __END__
+
 =pod
 
 =head1 NAME
