@@ -1,14 +1,11 @@
 package Music::Tag::M4A;
-use strict;
-use warnings;
-our $VERSION = .40_01;
+use strict; use warnings; use utf8;
+our $VERSION = '.4101';
 
-# Copyright (c) 2007,2010 Edward Allen III. Some rights reserved.
-
+# Copyright © 2007,2010 Edward Allen III. Some rights reserved.
 #
 # You may distribute under the terms of either the GNU General Public
 # License or the Artistic License, as specified in the README file.
-#
 
 use Music::Tag::Generic;
 use Audio::M4P::QuickTime;
@@ -156,7 +153,7 @@ sub set_tag {
     );
 
     while ( my ( $mtm, $qtm ) = each %simple_map ) {
-        unless ( ( $self->has_data($mtm) )
+        unless ( ( $self->info->has_data($mtm) )
             && ( $self->qt->$qtm eq $self->info->get_data($mtm) ) ) {
             $self->status("Storing new tag info for $mtm");
             $self->qt->$qtm( $self->info->get_data($mtm) );
@@ -312,6 +309,8 @@ Set to true to allow some tags to be written to disc.  Not recommended.
 
 M4A Tags are error-prone. Writing tags is not reliable.
 
+Please use github for bug tracking: L<http://github.com/riemann42/Music-Tag-M4A/issues|http://github.com/riemann42/Music-Tag-M4A/issues>.
+
 =head1 SEE ALSO
 
 L<Audio::M4P::QuickTime>, L<MP4::Info>, L<Music::Tag>
@@ -319,10 +318,6 @@ L<Audio::M4P::QuickTime>, L<MP4::Info>, L<Music::Tag>
 =head1 SOURCE
 
 Source is available at github: L<http://github.com/riemann42/Music-Tag-M4A|http://github.com/riemann42/Music-Tag-M4A>.
-
-=head1 BUG TRACKING
-
-Please use github for bug tracking: L<http://github.com/riemann42/Music-Tag-M4A/issues|http://github.com/riemann42/Music-Tag-M4A/issues>.
 
 =head1 AUTHOR 
 
@@ -356,6 +351,6 @@ http://www.gnu.org/copyleft/gpl.html.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2007 Edward Allen III. Some rights reserved.
+Copyright © 2007,2010 Edward Allen III. Some rights reserved.
 
 
