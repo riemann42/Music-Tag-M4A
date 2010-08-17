@@ -8,7 +8,6 @@ t/1-m4a.t
 t/2-pod.t
 t/3-pod-coverage.t
 t/elise.m4a
-t/MusicTagTest.pm
 t/options.conf
 Copying
 Artistic
